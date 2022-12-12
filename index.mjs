@@ -1,9 +1,16 @@
 import { Costants } from "./constants.mjs";
 import { internalCache } from "./internalCache.mjs";
+import { generateTodoItems } from "./dom.mjs";
+
+const $todoList = document.querySelector("#todo-list");
 
 let state ={
     todos: [],
     _todos: [],
+}
+
+const saveStateOnMemory = () => {
+    internalCache.set("state", state);
 }
 
 const getMemoryState = async () => {
@@ -22,15 +29,36 @@ const fetchTodos = async () => {
         const todos = [..._todos].splice(0,5);
         state.todos = [...todos];
         state._todos = [...todos];
-        internalCache.set("state", state);
+        saveStateOnMemory();
     }catch(error){
         console.log(error);
     }
 }
 
+const renderToDos = () => {
+   const html =  state.todos.map((todo) => {
+    return generateTodoItems(todo);
+   }).join("");
+  
+   $todoList.innerHTML = html;
+}
+
+const createTodo = ({title, completed}) => {
+    const newTodo = {
+        id: state._todos.length + 1,
+        title,
+        completed,
+    }
+
+    state.todos.push(newTodo);
+    state._todos.push(newTodo);
+    saveStateOnMemory();
+}
+
 const init = async() => {
     await getMemoryState();
-    console.log(state);
+    renderToDos();
+    
 }
 
 init();
