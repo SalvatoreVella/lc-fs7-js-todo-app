@@ -39,6 +39,7 @@ const fetchTodos = async () => {
         state.todos = [...todos];
         state._todos = [...todos];
         saveStateOnMemory();
+        getMemoryState();
     } catch (error) {
         console.log(error);
     }
@@ -57,8 +58,9 @@ const renderToDos = () => {
     $todoList.innerHTML = html;
 }
 
+
 const createTodo = ({ title, completed }) => {
-    if (title == "" || completed == "") {
+    if (!$title.value || !$completed.value) {
         return;
     }
 
@@ -84,10 +86,16 @@ const setFormListeners = () => {
     $form.addEventListener('submit', (event) => {
         event.preventDefault();
         createTodo(state.form);
+        if ($completed.value && $title.value) {
+            $completed.value = "";
+            $title.value = "";
+            state.form.title = $title.value;
+            state.form.completed = $completed.value;
+    }
     })
- /*    $sync.addEventListener("click", () => {
-        forceFetch();
-    }) */
+    $sync.addEventListener("click", () => {
+         forceFetch(); 
+    })
     $sortBy.addEventListener("change", (event) => {
        const value = event.target.value;
 
@@ -108,7 +116,6 @@ const setFormListeners = () => {
 
 const setToDolisteners = () => {
     document.addEventListener("click", (event) => {
-    
         if (event.target.classList.contains("delete-todo")) {
             const id = event.target.dataset.id;
             const targetIndex = state.todos.findIndex((todo) => {
