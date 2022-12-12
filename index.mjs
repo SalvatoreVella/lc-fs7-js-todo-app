@@ -51,6 +51,10 @@ const renderToDos = () => {
 }
 
 const createTodo = ({title, completed}) => {
+    if (title == "" || completed == "" ) {
+        return;
+    }
+    
     const newTodo = {
         id: state._todos.length + 1,
         title,
