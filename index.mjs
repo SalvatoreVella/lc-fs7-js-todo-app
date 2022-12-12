@@ -81,10 +81,24 @@ const setFormListeners = () => {
     })
 }
 
+const setToDolisteners = () => {
+    document.addEventListener("click", (event) =>{
+        const id = event.target.dataset.id;
+        const targetIndex = state.todos.findIndex((todo) => {
+            return todo.id == id;
+        });
+        state.todos.splice(targetIndex, 1);
+        state._todos.splice(targetIndex, 1);
+        saveStateOnMemory();
+        renderToDos();
+    })
+}
+
 const init = async() => {
     await getMemoryState();
     renderToDos();
     setFormListeners();
+    setToDolisteners();
 }
 
 
