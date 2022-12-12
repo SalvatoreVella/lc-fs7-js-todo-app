@@ -3,10 +3,17 @@ import { internalCache } from "./internalCache.mjs";
 import { generateTodoItems } from "./dom.mjs";
 
 const $todoList = document.querySelector("#todo-list");
+const $form = document.querySelector("#form");
+const $title = document.querySelector("#title");
+const $completed = document.querySelector("#completed");
 
 let state ={
     todos: [],
     _todos: [],
+    form: {
+        title: "",
+        completed: false,
+    },
 }
 
 const saveStateOnMemory = () => {
@@ -53,12 +60,28 @@ const createTodo = ({title, completed}) => {
     state.todos.push(newTodo);
     state._todos.push(newTodo);
     saveStateOnMemory();
+    renderToDos();
+}
+
+const setFormListeners = () => {
+    $title.addEventListener('input', (event) => {
+        state.form.title = event.target.value;
+    })
+    $completed.addEventListener('change', (event)=>{
+        state.form.completed = event.target.value === 'true';
+    })
+    $form.addEventListener('submit', (event) => {
+        event.preventDefault();
+        createTodo(state.form);
+        console.log(state);
+    })
 }
 
 const init = async() => {
     await getMemoryState();
     renderToDos();
-    
+    setFormListeners();
 }
+
 
 init();
