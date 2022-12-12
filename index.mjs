@@ -7,6 +7,7 @@ const $form = document.querySelector("#form");
 const $title = document.querySelector("#title");
 const $completed = document.querySelector("#completed");
 const $sync = document.querySelector("#sync");
+const $sortBy = document.querySelector("#sort-by");
 
 let state = {
     todos: [],
@@ -49,7 +50,6 @@ const forceFetch = async () => {
 }
 
 const renderToDos = () => {
-    console.log(state.todos);
     const html = state.todos.map((todo) => {
         return generateTodoItems(todo);
     }).join("");
@@ -84,10 +84,25 @@ const setFormListeners = () => {
     $form.addEventListener('submit', (event) => {
         event.preventDefault();
         createTodo(state.form);
-        console.log(state);
     })
-    $sync.addEventListener("click", () => {
+ /*    $sync.addEventListener("click", () => {
         forceFetch();
+    }) */
+    $sortBy.addEventListener("change", (event) => {
+       const value = event.target.value;
+
+       switch (value) {
+        case "TITLE_ASC": 
+            state.todos.sort((a, b) =>  a.title < b.title ? -1 : 0)
+            break;
+        case "TITLE_DESC": 
+            state.todos.sort((a, b) =>  b.title < a.title ? -1 : 0)
+            break;
+        default: 
+            state.todos.sort((a, b) =>  a.title < b.title ? -1 : 0)
+            break;
+       }
+       renderToDos();
     })
 }
 
