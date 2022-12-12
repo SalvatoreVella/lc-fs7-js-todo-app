@@ -6,8 +6,9 @@ const $todoList = document.querySelector("#todo-list");
 const $form = document.querySelector("#form");
 const $title = document.querySelector("#title");
 const $completed = document.querySelector("#completed");
+const $sync = document.querySelector("#sync");
 
-let state ={
+let state = {
     todos: [],
     _todos: [],
     form: {
@@ -23,38 +24,44 @@ const saveStateOnMemory = () => {
 const getMemoryState = async () => {
     const memoryTodos = internalCache.get("state");
     if (memoryTodos) {
-        state = {...memoryTodos};
+        state = { ...memoryTodos };
     } else {
         await fetchTodos();
     }
 }
 
 const fetchTodos = async () => {
-    try{
+    try {
         const results = await fetch(Costants.API_TODOS_URL);
         const _todos = await results.json();
-        const todos = [..._todos].splice(0,5);
+        const todos = [..._todos].splice(0, 5);
         state.todos = [...todos];
         state._todos = [...todos];
         saveStateOnMemory();
-    }catch(error){
+    } catch (error) {
         console.log(error);
     }
 }
 
-const renderToDos = () => {
-   const html =  state.todos.map((todo) => {
-    return generateTodoItems(todo);
-   }).join("");
-  
-   $todoList.innerHTML = html;
+const forceFetch = async () => {
+    await fetchTodos();
+    renderToDos();
 }
 
-const createTodo = ({title, completed}) => {
-    if (title == "" || completed == "" ) {
+const renderToDos = () => {
+    console.log(state.todos);
+    const html = state.todos.map((todo) => {
+        return generateTodoItems(todo);
+    }).join("");
+
+    $todoList.innerHTML = html;
+}
+
+const createTodo = ({ title, completed }) => {
+    if (title == "" || completed == "") {
         return;
     }
-    
+
     const newTodo = {
         id: state._todos.length + 1,
         title,
@@ -71,7 +78,7 @@ const setFormListeners = () => {
     $title.addEventListener('input', (event) => {
         state.form.title = event.target.value;
     })
-    $completed.addEventListener('change', (event)=>{
+    $completed.addEventListener('change', (event) => {
         state.form.completed = event.target.value === 'true';
     })
     $form.addEventListener('submit', (event) => {
@@ -79,22 +86,39 @@ const setFormListeners = () => {
         createTodo(state.form);
         console.log(state);
     })
-}
-
-const setToDolisteners = () => {
-    document.addEventListener("click", (event) =>{
-        const id = event.target.dataset.id;
-        const targetIndex = state.todos.findIndex((todo) => {
-            return todo.id == id;
-        });
-        state.todos.splice(targetIndex, 1);
-        state._todos.splice(targetIndex, 1);
-        saveStateOnMemory();
-        renderToDos();
+    $sync.addEventListener("click", () => {
+        forceFetch();
     })
 }
 
-const init = async() => {
+const setToDolisteners = () => {
+    document.addEventListener("click", (event) => {
+    
+        if (event.target.classList.contains("delete-todo")) {
+            const id = event.target.dataset.id;
+            const targetIndex = state.todos.findIndex((todo) => {
+                return todo.id == id;
+            });
+
+            state.todos.splice(targetIndex, 1);
+            state._todos.splice(targetIndex, 1);
+            saveStateOnMemory();
+            renderToDos();
+        } else if (event.target.classList.contains("update-completed-todo")) {
+            const id = event.target.dataset.id;
+            const targetIndex = state.todos.findIndex((todo) => {
+                return todo.id == id;
+            });
+            state.todos[targetIndex].completed = !state.todos[targetIndex].completed;
+            state._todos[targetIndex].completed = !state._todos[targetIndex].completed;
+            saveStateOnMemory();
+            renderToDos();
+        }
+    }) 
+
+}
+
+const init = async () => {
     await getMemoryState();
     renderToDos();
     setFormListeners();
